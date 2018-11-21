@@ -1,17 +1,18 @@
-import { TestBed, async } from '@angular/core/testing';
+import { TestBed, async, tick, fakeAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpXhrBackend } from '@angular/common/http';
 import { WorkshopService } from './services/workshop.service';
+import { of } from 'rxjs';
 
+describe('AppComponent', async() => {
+    
+  let fixture = TestBed.createComponent(AppComponent);
+  let component = fixture.componentInstance;
+  let app = fixture.debugElement.componentInstance;
+  let service = fixture.debugElement.injector.get(WorkshopService); 
 
-describe('AppComponent', () => {
-  const fixture = TestBed.createComponent(AppComponent);
-  const compiled = fixture.debugElement.nativeElement;
-  const component = fixture.componentInstance;
-  const service = TestBed.get(WorkshopService);
-
-  beforeEach(async(() => {
+    beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         RouterTestingModule,
@@ -20,31 +21,35 @@ describe('AppComponent', () => {
       declarations: [
         AppComponent
       ],
+      providers: [
+        WorkshopService
+      ]
+
     }).compileComponents();
+
   }));
 
   it('should create the app', () => {
-    const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();
   });
 
-  // it('should create the app', () => {
-  //   const app = fixture.debugElement.componentInstance;
-  //   expect(app.workshop).toEqual('Ajá, y tú ¿Qué?');
-  // }); 
-
-  it('should render title in a h1 tag', async (done) => {
+  it('should render title in a h1 tag', async(() => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const mock = {
+      _id: '',
+      message: 'Ajá, y tú ¿Qué?'
+    }
     fixture.detectChanges();
-    expect(compiled.querySelector('h1').textContent).toContain('Espérate un momentico');
-    let spy = spyOn(service, 'getWorkshopMessage');
+    expect(fixture.debugElement.nativeElement.querySelector('h1').textContent).toContain('Espérate un momentico');
+
+    const mockService = jasmine.createSpyObj('WorkshopService', ['getWorkshopMessage']); 
+    const mensaje = mockService.getWorkshopMessage.and.returnValue(mock.message); 
+
+    console.log(mensaje);
     component.ngOnInit();
+    fixture.detectChanges();
+    expect(fixture.debugElement.nativeElement.querySelector('h1').textContent).toContain('Ajá, y tú ¿Qué?');
 
-    spy.calls.mostRecent().returnValue.then(() => {
-      fixture.detectChanges();
-      expect(compiled.querySelector('h1').textContent).toContain('Ajá, y tú ¿Qué?');
-      done();
-    })
-
-  });
+  }));
 
 });
